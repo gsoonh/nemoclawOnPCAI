@@ -1,6 +1,5 @@
-# test-nemoclaw
+# NemoClaw Deployment on HPE Private Cloud AI
 
-> A minimalist software repository scaffold for the test-nemoclaw project.
 
 ## 📑 Table of Contents
 
@@ -13,7 +12,9 @@
 
 ## 📝 Description
 
-test-nemoclaw is a minimalist software repository structure serving as a clean slate for development. In its current form, it provides a foundational workspace without pre-configured dependencies, scripts, or active source code. This project is designed to be populated with custom logic and configurations as development progresses, ensuring a bloat-free starting point for developers who want to construct their codebase from the ground up.
+NVIDIA NemoClaw deploys very well in Docker-based environments. However, deploying NemoClaw on Kubernetes is more complex, as NVIDIA currently does not provide a complete end-to-end deployment guide or reference architecture for Kubernetes platforms such as HPE Private Cloud AI.
+
+This project provides a comprehensive step-by-step guide for deploying NemoClaw on Kubernetes running within HPE Private Cloud AI. It first explains the deployment architecture and core concepts, then walks through the installation, configuration, and deployment procedures required to successfully run NemoClaw in an enterprise Kubernetes environment.
 
 ## ✨ Key Features
 

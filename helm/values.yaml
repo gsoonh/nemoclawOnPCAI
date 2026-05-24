@@ -1,0 +1,10 @@
+ezua:
+  virtualService:
+    endpoint: "nemoclaw.${DOMAIN_NAME}"
+    istioGateway: "istio-system/ezaf-gateway"
+
+workspace:
+  endpoint: "open-webui-ollama.openwebui.svc.cluster.local:11434"
+  model: "mistral:7b"
+  token: "none"
+  agent_name: "gsh-assistant"

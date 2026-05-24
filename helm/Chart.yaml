@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: 0.0.9
+description: A deployment for Nvidia Nemoclaw
+name: nemoclaw
+type: application
+version: 0.1.0

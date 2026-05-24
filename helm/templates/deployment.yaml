@@ -1,0 +1,191 @@
+---
+# NemoClaw on Kubernetes
+# Uses official installer with Docker-in-Docker for sandbox isolation.
+# Prerequisites: kubectl create namespace nemoclaw
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Release.Name }}-app"
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+    app: "{{ .Release.Name }}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "{{ .Release.Name }}"
+  template:
+    metadata:
+      labels:
+        app: "{{ .Release.Name }}"
+    spec:
+      containers:
+        # Docker daemon (DinD)
+        - name: dind
+          image: docker:24-dind
+          securityContext:
+            privileged: true
+          env:
+            - name: DOCKER_TLS_CERTDIR
+              value: ""
+          command: 
+          - sh
+          - -c
+          - |
+            # Background watcher: copy openshell-sandbox from shared volume to local bin
+            (while true; do
+              if [ -f /openshell-shared/openshell-sandbox ] && \
+                 [ ! -f /usr/local/bin/openshell-sandbox ]; then
+                 cp /openshell-shared/openshell-sandbox /usr/local/bin/openshell-sandbox
+                 chmod 755 /usr/local/bin/openshell-sandbox
+                 echo "[dind] openshell-sandbox installed from shared volume"
+              fi
+              sleep 2
+            done) &
+            exec dockerd --host=unix:///var/run/docker.sock --storage-driver=vfs
+          volumeMounts:
+            - name: docker-storage
+              mountPath: /var/lib/docker
+            - name: docker-socket
+              mountPath: /var/run
+            - name: docker-config
+              mountPath: /etc/docker
+            - name: openshell-shared      # ADD THIS
+              mountPath: /openshell-shared
+          resources:
+            requests:
+              memory: "16Gi"
+              cpu: "4"
+
+        # Workspace - runs official NemoClaw installer
+        - name: workspace
+          image: node:22-trixie
+          command:
+            - bash
+            - -c
+            - |
+              set -e
+
+              # Install packages
+              echo "[1/4] Installing packages..."
+              apt-get update -qq
+              apt-get install -y -qq docker.io socat curl >/dev/null 2>&1
+
+              # Start socat proxy for K8s DNS bridge
+              echo "[2/4] Starting socat proxy..."
+              socat TCP-LISTEN:8000,fork,reuseaddr TCP:$DYNAMO_HOST &
+              # Add hosts entry so validation can reach socat via host.openshell.internal
+              echo "127.0.0.1 host.openshell.internal" >> /etc/hosts
+              sleep 1
+
+              # Wait for Docker
+              echo "[3/4] Waiting for Docker daemon..."
+              for i in $(seq 1 30); do
+                if docker info >/dev/null 2>&1; then break; fi
+                sleep 2
+              done
+              docker info >/dev/null 2>&1 || { echo "Docker not ready"; exit 1; }
+              echo "Docker ready"
+
+              # Background watcher: sync openshell-sandbox to shared volume for DinD
+               (while true; do
+                 if [ -f /usr/local/bin/openshell-sandbox ] && \
+                    [ ! -f /openshell-shared/openshell-sandbox ]; then
+                    cp /usr/local/bin/openshell-sandbox /openshell-shared/openshell-sandbox
+                    chmod 755 /openshell-shared/openshell-sandbox
+                    echo "[workspace] openshell-sandbox synced to shared volume"
+                 fi
+                sleep 2
+              done) &
+
+              # Run official NemoClaw installer
+              echo "[4/4] Running NemoClaw installer..."
+              curl -fsSL https://nvidia.com/nemoclaw.sh | bash
+
+              # Keep running after onboard
+              echo "Onboard complete. Container staying alive."
+              exec sleep infinity
+          ports:
+            - containerPort: 18789
+          env:
+            - name: DOCKER_HOST
+              value: unix:///var/run/docker.sock
+            # Dynamo endpoint (raw host:port for socat) - UPDATE THIS FOR YOUR CLUSTER
+            - name: DYNAMO_HOST
+              value: "{{ .Values.workspace.endpoint }}"
+            # NemoClaw config (uses host.openshell.internal via socat)
+            - name: NEMOCLAW_NON_INTERACTIVE
+              value: "1"
+            - name: NEMOCLAW_PROVIDER
+              value: "custom"
+            - name: NEMOCLAW_MODEL
+              value: "{{ .Values.workspace.model }}"
+            - name: COMPATIBLE_API_KEY
+              value: "{{ .Values.workspace.token }}"
+            - name: NEMOCLAW_ENDPOINT_URL
+              value: "http://host.openshell.internal:8000/v1"
+            - name: NEMOCLAW_SANDBOX_NAME
+              value: "{{ .Values.workspace.agent_name }}"
+            - name: NEMOCLAW_POLICY_MODE
+              value: "skip"
+            - name: NEMOCLAW_ACCEPT_THIRD_PARTY_SOFTWARE
+              value: "1"
+            # need this to allow controlUI headers to be validated
+            # - name: "OPENCLAW_GATEWAY_ALLOWED_ORIGINS"
+            #   value: "[\"*\"]"
+              # value: "['http://{{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local:18789/', 'https://{{ .Values.ezua.virtualService.endpoint }}']"
+            # need this to allow virtual service redirection to work
+            - name: CHAT_UI_URL
+              # value: "http://{{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local:18789/"
+              value: "https://{{ .Values.ezua.virtualService.endpoint }}"
+          volumeMounts:
+            - name: docker-socket
+              mountPath: /var/run
+            - name: docker-config
+              mountPath: /etc/docker
+            - name: openshell-shared      # ADD THIS
+              mountPath: /openshell-shared
+          resources:
+            requests:
+              memory: "32Gi"
+              cpu: "4"
+
+      # Configure Docker daemon for cgroup v2
+      initContainers:
+        - name: init-docker-config
+          image: busybox
+          command: ["sh", "-c", "echo '{\"default-cgroupns-mode\":\"host\"}' > /etc/docker/daemon.json"]
+          volumeMounts:
+            - name: docker-config
+              mountPath: /etc/docker
+
+      volumes:
+        - name: docker-storage
+          emptyDir: {}
+        - name: docker-socket
+          emptyDir: {}
+        - name: docker-config
+          emptyDir: {}
+        - name: openshell-shared          # ADD THIS
+          emptyDir: {}
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Release.Name }}"
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+    app: "{{ .Release.Name }}"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 18789
+      targetPort: 18789
+      protocol: TCP
+  selector:
+    app: {{ .Release.Name }}

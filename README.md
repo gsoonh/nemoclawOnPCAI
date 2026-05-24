@@ -42,6 +42,8 @@ git clone https://github.com/gsoonh/nemoclawOnPCAI
  b. Click Framework Chart on the bottom right, You get to this screen and populate. The required upload file is the nemoclaw-0.1.0.tgz.
 
 <img width="592" height="392" alt="image" src="https://github.com/user-attachments/assets/b545845f-719a-4ba0-8dbc-2f084063e53a" />
+![Main Dashboard](images/pcai-import2.PNG)
+
 
 
 # See the Development Setup section below

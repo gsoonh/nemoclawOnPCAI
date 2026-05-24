@@ -32,7 +32,7 @@ This project provides a comprehensive step-by-step guide for deploying NemoClaw 
 ```bash
 
 # 1. Clone the repository
-git clone https://github.com/gsoonh/nemoclawOnPCAI
+git clone https://github.com/gsoonh/nemoclawOnPCAI.git
 
 #2.  Launch HPE Private Cloud AI and login. Select Tools & Framework, choose import Framework.
  a. Fill up as shown below.

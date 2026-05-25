@@ -89,7 +89,7 @@ This is the deployment structure:
 
 ## 👥 Contributing
 
-Contributions are welcome! Here's the standard flow:
+Contributions are welcome! Hope you enjoy it. Here's the standard flow:
 
 1. **Fork** the repository
 2. **Clone** your fork: `git clone https://github.com/your-username/repo.git`
@@ -98,6 +98,5 @@ Contributions are welcome! Here's the standard flow:
 5. **Push**: `git push origin feature/your-feature`
 6. **Open** a pull request
 
-Please follow the existing code style and include tests for new behavior where applicable.
 
 

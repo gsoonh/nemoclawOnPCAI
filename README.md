@@ -23,8 +23,9 @@ This project provides a comprehensive step-by-step guide for deploying NemoClaw 
 
 ## 🎯 Use Cases
 
-- Establishing a clean slate for starting a new software prototype.
-- Testing repository connection, configuration, and integration pipelines with minimal noise.
+- 24 hours Personal Autonomous Assistant - Always-on Personal Assistant, calender/email/research automation, task planning and reminders.
+- Autonomous IT Operation - Kubernetes troubeshooting, infrastructure deployment, CICD automation, monitor and alert remediation, etc
+- multi-agent enterprise automation - emerging use cases that deploy a fleet of ai agents to do finance, HR, procurement and customer operations
 
 ## ⚡ Quick Start
 
@@ -70,6 +71,7 @@ dur1rR-Q0LaPMg-qgH1lF87sREMAF5wI7-rVt1qgf60
 ```
 Put the string into the UI and you should be able to access it. Take note the gateway token will expire so you may need to generate the token quite frequently.
 
+You should be able to start interacting with the user interface. See "result" in "images" folder.
 
 
 # Architecture
@@ -81,7 +83,19 @@ Here is the architecture diagram:
 NemoClaw is deployed on a Kubernetes (k8s) cluster running on one worker nodes. Since k8s uses containerd instead of Docker as its native runtime, the cluster does not provide a Docker daemon (dockerd) required by the NemoClaw onboarding workflow. To bridge this gap, the nemoclaw-app Pod runs a dedicated Docker-in-Docker (DinD) container that provides an isolated Docker daemon inside k3s. Alongside it, a separate workspace container hosts the Docker CLI, NemoClaw tooling, installer logic, and socat proxy services. Both containers operate side-by-side within the same Pod, sharing the same localhost network namespace, Pod IP, and mounted volumes such as /var/run. This allows the workspace container to communicate directly with the Docker daemon exposed by the DinD container through localhost:2375 and shared Docker socket paths, enabling NemoClaw onboarding and container lifecycle operations to function seamlessly inside a containerd-based , k3s environment. The deployment follows Kubernetes’ native ownership hierarchy — Deployment → ReplicaSet → Pod — providing scalability, resiliency, and orchestration benefits while maintaining a fully self-contained Docker-enabled workspace. In parallel, the openwebui namespace hosts mistra:7b model that will be use by openclaw.
 
 
-## 📁 Project Structure
+## 📁 Deployment Structure
+
+Kubernetes Host Node
+└── Deployment: nemoclaw-app
+    └── ReplicaSet: nemoclaw-app-74db466bdf
+        └── Pod: nemoclaw-app-74db466bdf-nzlqt
+            ├── Container: dind
+            │     └── dockerd running
+            │
+            └── Container: workspace
+                  ├── docker CLI
+                  ├── socat proxy
+                  └── NemoClaw installer
 
 
 ## 👥 Contributing

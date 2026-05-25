@@ -12,9 +12,9 @@
 
 ## 📝 Description
 
-NVIDIA NemoClaw deploys very well in Docker-based environments. However, deploying NemoClaw on Kubernetes is more complex, as NVIDIA currently does not provide a complete end-to-end deployment guide or reference architecture for Kubernetes platforms such as HPE Private Cloud AI.
+NVIDIA NemoClaw deploys very well in Docker-based environments. However, deploying NemoClaw on Kubernetes is more complex, as NVIDIA currently does not provide a complete end-to-end deployment guide or reference architecture for Kubernetes platforms such as HPE Private Cloud AI (PCAI).
 
-This project provides a comprehensive step-by-step guide for deploying NemoClaw on Kubernetes running within HPE Private Cloud AI. It first explains the deployment architecture and core concepts, then walks through the installation, configuration, and deployment procedures required to successfully run NemoClaw in an enterprise Kubernetes environment. In the event if you don't have HPE Private Cloud AI, this solution also work on kubernetes on any platform. 
+This project provides a comprehensive step-by-step guide for deploying NemoClaw on Kubernetes running within HPE PCAI. It first explains the deployment architecture and core concepts, then walks through the installation, configuration, and deployment procedures required to successfully run NemoClaw in an enterprise Kubernetes environment. In the event if you don't have HPE PCAI, this solution also work on kubernetes on any platform with minor changes.
 
 ## ✨ Key Features
 
@@ -31,21 +31,17 @@ This project provides a comprehensive step-by-step guide for deploying NemoClaw 
 # 1. Clone the repository
 git clone https://github.com/gsoonh/nemoclawOnPCAI.git
 
-# 2. Make sure you have a model to serve the openclaw. i am using Mistra: 7b hosted on ollama.
+# 2. Make sure you have a model to serve the openclaw. 
+For my case, I deploy mistra:7b on ollama and expose it out as an end-point.  In HPE PCAI, you can also deploy a model using MLIS and expose it out as a API endpoint. I choose ollama for simplicity.
 
-# 3. Launch HPE Private Cloud AI and login. Select Tools & Framework, choose import Framework.
-     a. Fill up as shown in "pcai-import1.PNG" in the image folder.
-
+# 3. Deploy on HPE PCAI using Import Framework 
+     I had included the deployment steps as images: pcai-import1.PNG to pcai-import4.PNG. Refer it in the Image folder. 
+     To do so, login to HPE PCAI, go to Tools/Framework and choose import framework and follow the deployment steps.    
+    
+     If you are not using HPE PCAI, you can deploy directly using the helm chart. However, you would need to modify the values.yaml file. In particular, the "ezua" section 
+     and replace with your own virtualservices. Also, reconfigure your istiogateway. Also, in the virtualServices.yaml file, remove all the "hpe-ezua" label or any "ezua"   
+     related settings. After all these are done, you would need to repackage your helm chart.
      
-     b. Click Framework Chart on the bottom right, [populate as show in "pcai-import2.PNG". The required upload file is the
-        nemoclaw-0.1.0.tgz.
-
-        ```
-
-![PCAI Import](./images/pcai-import2.PNG)
-
-#4.  In the value section, you should something similar.  
-
 
 # Architecture
 ```

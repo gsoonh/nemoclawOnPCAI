@@ -84,19 +84,8 @@ NemoClaw is deployed on a Kubernetes (k8s) cluster running on one worker nodes. 
 
 
 ## 📁 Deployment Structure
-
-Kubernetes Host Node
-└── Deployment: nemoclaw-app
-    └── ReplicaSet: nemoclaw-app-74db466bdf
-        └── Pod: nemoclaw-app-74db466bdf-nzlqt
-            ├── Container: dind
-            │     └── dockerd running
-            │
-            └── Container: workspace
-                  ├── docker CLI
-                  ├── socat proxy
-                  └── NemoClaw installer
-
+This is the deployment structure:
+![NemoClaw Deployment Structur](./images/structure.png)
 
 ## 👥 Contributing
 

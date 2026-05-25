@@ -44,9 +44,9 @@ For my case, I deploy mistra:7b on ollama and expose it out as an end-point.  In
      
 
 # Architecture
-```
-Here is the architecture diagram:
 
+Here is the architecture diagram:
+```
 ![NemoClaw Kubernetes Architecture](./images/Architecture.png)
 
 NemoClaw is deployed on a Kubernetes (k8s) cluster running on one worker nodes of the PCAI. Since k8s uses containerd instead of Docker as its native runtime, the cluster does not provide a Docker daemon (dockerd) required by the NemoClaw onboarding workflow. To bridge this gap, the nemoclaw-app Pod runs a dedicated Docker-in-Docker (DinD) container that provides an isolated Docker daemon inside k3s. Alongside it, a separate workspace container hosts the Docker CLI, NemoClaw tooling, installer logic, and socat proxy services. Both containers operate side-by-side within the same Pod, sharing the same localhost network namespace, Pod IP, and mounted volumes such as /var/run. This allows the workspace container to communicate directly with the Docker daemon exposed by the DinD container through localhost:2375 and shared Docker socket paths, enabling NemoClaw onboarding and container lifecycle operations to function seamlessly inside a containerd-based , k3s environment. The deployment follows Kubernetes’ native ownership hierarchy — Deployment → ReplicaSet → Pod — providing scalability, resiliency, and orchestration benefits while maintaining a fully self-contained Docker-enabled workspace. In parallel, the openwebui namespace hosts Open WebUI, Ollama, and the mistra:7b model.
@@ -54,9 +54,6 @@ NemoClaw is deployed on a Kubernetes (k8s) cluster running on one worker nodes o
 
 ## 📁 Project Structure
 
-```
-.
-```
 
 ## 👥 Contributing
 

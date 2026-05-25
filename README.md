@@ -35,6 +35,8 @@ git clone https://github.com/gsoonh/nemoclawOnPCAI.git
 
 # 3. Launch HPE Private Cloud AI and login. Select Tools & Framework, choose import Framework.
      a. Fill up as shown in "pcai-import1.PNG" in the image folder.
+
+     
      b. Click Framework Chart on the bottom right, [populate as show in "pcai-import2.PNG". The required upload file is the
         nemoclaw-0.1.0.tgz.
 

@@ -41,9 +41,36 @@ To do so, login to HPE PCAI, go to Tools/Framework and choose import framework a
 ```
 kubectl logs $(kubectl get pod -n nemoclaw -l app=nemoclaw -o jsonpath='{.items[0].metadata.name}')   -n nemoclaw -c workspace --tail=50
 ```
+If you are NOT using HPE PCAI, you can deploy directly using the helm chart. However, you would need to modify the values.yaml file. In particular, the "ezua" section and replace with your own virtualservices. Also, reconfigure your istiogateway. Also, in the virtualServices.yaml file, remove all the "hpe-ezua" label or any "ezua" related settings. After all these are done, you would need to repackage your helm chart.
 
-If you are not using HPE PCAI, you can deploy directly using the helm chart. However, you would need to modify the values.yaml file. In particular, the "ezua" section and replace with your own virtualservices. Also, reconfigure your istiogateway. Also, in the virtualServices.yaml file, remove all the "hpe-ezua" label or any "ezua" related settings. After all these are done, you would need to repackage your helm chart.
-     
+# 4. The Outcome
+If you had successfully deployed. You should see this nemoclaw-icon (in "images" folder) in "Import Framework" section. It should show "Ready" and you can click "Open" to open the user interface. Whe you are at the user interface, you would need the gateway token to access. You can run the following command.
+
+```
+kubectl get pods -n nemoclaw 
+```
+NAME                            READY   STATUS    RESTARTS   AGE
+<your pod name>                  2/2     Running   0          88m
+
+We need to console into the workspace container to get the gateway-token. Replace <your pod name> with the actual name.
+```
+kubectl exec -it  -n <your pod name> -c workspace -- sh
+```
+Once you are inside the workspace container. You need to run the following command to get the gateway-token.
+```
+#nemoclaw list
+  Sandboxes:
+    gsh-assistant *
+      agent: openclaw  model: mistral:7b  provider: compatible-endpoint  CPU sandbox  policies: none
+      dashboard: http://127.0.0.1:18789/
+  * = default sandbox
+
+# nemoclaw gsh-assistant gateway-token --quiet
+dur1rR-Q0LaPMg-qgH1lF87sREMAF5wI7-rVt1qgf60
+```
+Put the string into the UI and you should be able to access it. Take note the gateway token will expire so you may need to generate the token quite frequently.
+
+
 
 # Architecture
 

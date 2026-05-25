@@ -37,7 +37,10 @@ For my case, I deploy mistra:7b on ollama and expose it out as an end-point.  In
 
 # 3. Deploy on HPE PCAI using Import Framework 
 I had included the deployment steps as images: pcai-import1.PNG to pcai-import4.PNG. Refer it in the "images" folder. 
-To do so, login to HPE PCAI, go to Tools/Framework and choose import framework and follow the deployment steps. 
+To do so, login to HPE PCAI, go to Tools/Framework and choose import framework and follow the deployment steps. Take note the deployment process will take some time to complete. Give it at least 10 minutes. You can check the status using this:
+```
+kubectl logs $(kubectl get pod -n nemoclaw -l app=nemoclaw -o jsonpath='{.items[0].metadata.name}')   -n nemoclaw -c workspace --tail=50
+```
 
 If you are not using HPE PCAI, you can deploy directly using the helm chart. However, you would need to modify the values.yaml file. In particular, the "ezua" section and replace with your own virtualservices. Also, reconfigure your istiogateway. Also, in the virtualServices.yaml file, remove all the "hpe-ezua" label or any "ezua" related settings. After all these are done, you would need to repackage your helm chart.
      
@@ -48,7 +51,7 @@ Here is the architecture diagram:
 
 ![NemoClaw Kubernetes Architecture](./images/Architecture.png)
 
-NemoClaw is deployed on a Kubernetes (k8s) cluster running on one worker nodes of the PCAI. Since k8s uses containerd instead of Docker as its native runtime, the cluster does not provide a Docker daemon (dockerd) required by the NemoClaw onboarding workflow. To bridge this gap, the nemoclaw-app Pod runs a dedicated Docker-in-Docker (DinD) container that provides an isolated Docker daemon inside k3s. Alongside it, a separate workspace container hosts the Docker CLI, NemoClaw tooling, installer logic, and socat proxy services. Both containers operate side-by-side within the same Pod, sharing the same localhost network namespace, Pod IP, and mounted volumes such as /var/run. This allows the workspace container to communicate directly with the Docker daemon exposed by the DinD container through localhost:2375 and shared Docker socket paths, enabling NemoClaw onboarding and container lifecycle operations to function seamlessly inside a containerd-based , k3s environment. The deployment follows Kubernetes’ native ownership hierarchy — Deployment → ReplicaSet → Pod — providing scalability, resiliency, and orchestration benefits while maintaining a fully self-contained Docker-enabled workspace. In parallel, the openwebui namespace hosts Open WebUI, Ollama, and the mistra:7b model.
+NemoClaw is deployed on a Kubernetes (k8s) cluster running on one worker nodes. Since k8s uses containerd instead of Docker as its native runtime, the cluster does not provide a Docker daemon (dockerd) required by the NemoClaw onboarding workflow. To bridge this gap, the nemoclaw-app Pod runs a dedicated Docker-in-Docker (DinD) container that provides an isolated Docker daemon inside k3s. Alongside it, a separate workspace container hosts the Docker CLI, NemoClaw tooling, installer logic, and socat proxy services. Both containers operate side-by-side within the same Pod, sharing the same localhost network namespace, Pod IP, and mounted volumes such as /var/run. This allows the workspace container to communicate directly with the Docker daemon exposed by the DinD container through localhost:2375 and shared Docker socket paths, enabling NemoClaw onboarding and container lifecycle operations to function seamlessly inside a containerd-based , k3s environment. The deployment follows Kubernetes’ native ownership hierarchy — Deployment → ReplicaSet → Pod — providing scalability, resiliency, and orchestration benefits while maintaining a fully self-contained Docker-enabled workspace. In parallel, the openwebui namespace hosts mistra:7b model that will be use by openclaw.
 
 
 ## 📁 Project Structure

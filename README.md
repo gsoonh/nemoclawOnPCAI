@@ -29,8 +29,9 @@ This project provides a comprehensive step-by-step guide for deploying NemoClaw 
 ## ⚡ Quick Start
 
 # 1. Clone the repository
+```
 git clone https://github.com/gsoonh/nemoclawOnPCAI.git
-
+```
 # 2. Make sure you have a model to serve the openclaw. 
 For my case, I deploy mistra:7b on ollama and expose it out as an end-point.  In HPE PCAI, you can also deploy a model using MLIS and expose it out as a API endpoint. I choose ollama for simplicity.
 

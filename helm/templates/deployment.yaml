@@ -1,7 +1,10 @@
 ---
 # NemoClaw on Kubernetes
-# Uses official installer with Docker-in-Docker for sandbox isolation.
-# Prerequisites: kubectl create namespace nemoclaw
+# This is a experiement as nemoclaw is still in alpha.
+# We are pulling the nvidia nemoclaw image which come with a 
+# build-in k3s for secure deployment and we need DinD to ensure
+# the CLI can run
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
